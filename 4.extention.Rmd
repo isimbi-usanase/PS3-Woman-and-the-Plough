@@ -6,13 +6,6 @@ output:
 date: "2026-11-26"
 ---
 
----
-title: "Extension - Heterogeneity of the Plough Effect"
-output:
-  pdf_document: default
-  html_document: default
----
-
 # Extension (e): Heterogeneity of the plough effect
 
 ## Setup
