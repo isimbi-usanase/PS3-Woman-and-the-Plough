@@ -182,25 +182,96 @@ Overall, we find the paper's main claim convincing in direction but not in magni
 
 \subsection{Extension}
 
-\instr{This part should include your extension. Test whether the main conclusion continues to hold when you change something the authors did not change. Discuss the extension in theory (as above briefly describe your empirical strategy and assumptions) and show us your main result.}
+The baseline specification of Alesina, Giuliano and Nunn (2013) assumes that the relationship between historical plough use and contemporary gender outcomes is homogeneous across countries. However, if this relationship reflects the persistence of cultural norms, an important question is whether political institutions and economic development can weaken their transmission. We investigate two potential moderating factors. First, communist regimes actively promoted female employment through state policies and greater integration of women into the labour market. If institutional changes can counteract traditional gender norms, we expect the negative plough effect to be weaker in countries with a communist history. Second, economic development may reduce the importance of traditional gender roles through structural transformation, increased educational opportunities and changes in labour demand. We therefore expect the negative plough effect to decrease in magnitude as income rises.
 
-% Your text
+\paragraph{Empirical strategy.}
 
-\begin{table}[htbp]
-  \centering
-  \caption{[Title]}
-  \label{tab:ext}
-  [Insert table here]
+We extend the OLS specification in Table IV of the original paper by introducing an interaction between historical plough use and a country-level moderator:
+\begin{equation}
+    Y_c = \alpha + \beta_1 \mathit{Plough}_c + \beta_2 Z_c
+    + \beta_3 (\mathit{Plough}_c \times Z_c)
+    + X_c'\gamma + \delta_r + \varepsilon_c.
+    \label{eq:extension}
+\end{equation}
+The dependent variable, $Y_c$, represents female labour force participation (FLFP), female firm ownership or women's parliamentary representation. The moderator, $Z_c$, is either a dummy indicating communist history or centred log income per capita. We retain the historical and contemporary controls of the baseline specification, including the quadratic income term. In the income interaction specification, the linear income term is captured by $Z_c$.
 
-  \tablenotes{[What is estimated in each column; standard errors; significance
-  levels.]}
-\end{table}
+Following our main replication specification, we include continent fixed effects, $\delta_r$, and use heteroskedasticity-robust standard errors. Specifications without continent fixed effects are reported as a robustness comparison.
+
+The coefficient of interest is $\beta_3$. The marginal plough effect is given by: 
+\begin{equation}
+    \frac{\partial Y_c}{\partial \mathit{Plough}_c}
+    = \beta_1 + \beta_3 Z_c.
+    \label{eq:marginal_effect}
+\end{equation}
+For communist history, the estimated plough effect is $\beta_1$ in non-communist countries and $\beta_1+\beta_3$ in communist countries. For economic development, centring log income allows $\beta_1$ to be interpreted as the estimated plough effect at mean log income, using the mean of the available income data.
+
+Under both hypotheses, we expect $\beta_3 > 0$, indicating an attenuation of the negative relationship between historical plough use and contemporary gender outcomes.
+
+A causal interpretation requires conditional exogeneity of plough use, the moderator and their interaction. As discussed in the critical evaluation, this assumption may not hold.  Our estimates are therefore interpreted as conditional associations rather than causal effects.
+
+\paragraph{Results: Communist history.}
+Table~\ref{tab:ext_comm} presents the results for communist history. Across all specifications, the coefficient on traditional plough use remains negative and statistically
+significant, indicating that the original paper's findings remain robust among non-communist countries.
+
+Without continent fixed effects, the interaction coefficient for FLFP is positive but statistically insignificant ($1.239$, SE $=5.960$). When continent fixed effects are
+included, the coefficient increases to $3.074$ (SE $=6.103$), but remains statistically insignificant. The interaction coefficients for female firm ownership ($-3.467$) and women's political representation ($-3.368$) are also statistically insignificant.
+
+Moreover, Table~\ref{tab:ext_marginal} shows that the estimated marginal plough effect on FLFP in communist countries, $\beta_1+\beta_3$, remains negative, at approximately $-11.425$ percentage points in the specification with continent fixed effects, compared to $-12.934$ percentage points without fixed effects.
+
+Overall, we find no statistically significant evidence that communist history weakens the relationship between historical plough use and contemporary gender outcomes. However, the large standard errors prevent us from ruling out economically meaningful differences between communist and non-communist countries.
+
+\input{tables/table_extension_communism.tex}
+
+\input{tables/table_extension_marginal_effects.tex}
+
+\paragraph{Results: Economic development.}
+Table~\ref{tab:ext_income} examines heterogeneity by economic development. At mean log income, the estimated plough coefficients remain negative and statistically significant
+at the 1\% level across all three outcomes, both with and without continent fixed effects.
+
+Contrary to our initial hypothesis, the interaction coefficients between historical plough use and log income are negative across all specifications. When continent fixed effects are included, the interaction coefficients for FLFP ($-2.592$, SE $=1.853$) and female firm ownership ($-1.198$, SE $=2.699$) remain statistically insignificant.
+
+However, the interaction coefficient for women's political representation is negative and statistically significant at the 1\% level. Its magnitude increases from $-2.705$ without continent fixed effects to $-3.425$ (SE $=0.949$) when continent fixed effects are included.
+
+This suggests that the negative relationship between historical plough use and women's political representation becomes stronger as income increases, rather than weaker as initially hypothesised. This finding is robust to the inclusion of continent fixed effects.
+
+Overall, we find no evidence that economic development systematically attenuates the persistence of gender norms associated with historical plough use.
+
+\input{tables/table_extension_income.tex}
+
+\paragraph{Interpretation and robustness.}
+
+As discussed in the critical evaluation, the baseline OLS estimates may suffer from omitted variable bias and measurement error. Introducing interaction terms does not resolve these identification problems and may introduce additional sources of endogeneity.
+
+Communist history is not randomly assigned and may capture other institutional, historical or geographical characteristics. Continent fixed effects account for broad regional differences but cannot eliminate all potential confounding factors. Similarly, contemporary income may itself be influenced by historical gender norms, making it a potentially endogenous moderator.
+
+Furthermore, the imprecision of the interaction estimates limits our ability to identify heterogeneous relationships. Statistically insignificant coefficients should therefore not be interpreted as evidence that the plough effect is identical across countries.
+
+Overall, the results provide limited evidence that political institutions or economic development weaken the persistence of gender norms associated with historical plough use.
 
 \subsection{Ideal empirical strategy}
 
-\instr{Please describe the best empirical design you could implement if there were no restrictions on data availability (or on money and ethics, in the case of an experiment).}
+An ideal empirical strategy would exploit exogenous variation in political institutions while holding historical and cultural characteristics as constant as possible. One potential setting is the historical division of Germany into East and West Germany following the Second World War. While both regions shared a common national history, they were exposed to substantially different political and economic institutions for approximately four decades.
 
-% Your text
+With unrestricted data availability, we would collect detailed regional information on historical plough use, pre-division gender norms, female labour force participation and socioeconomic characteristics, together with longitudinal data covering the periods before, during and after the division.
+
+We could then implement a difference-in-differences design with a triple interaction between historical plough use, exposure to communist institutions and the post-division period:
+\begin{equation}
+\begin{aligned}
+    Y_{it} = {} & \alpha_i + \lambda_t
+    + \theta_1 (\mathit{East}_i \times \mathit{Post}_t) \\
+    & + \theta_2 (\mathit{Plough}_i \times \mathit{Post}_t) \\
+    & + \theta_3 (\mathit{Plough}_i \times \mathit{East}_i \times \mathit{Post}_t)
+    + \varepsilon_{it}.
+\end{aligned}
+\label{eq:ideal_strategy}
+\end{equation}
+Here, $\alpha_i$ and $\lambda_t$ denote regional and time fixed effects, respectively. The coefficient $\theta_3$ captures whether exposure to communist institutions changed the relationship between historical plough use and female labour force participation relative to West Germany.
+
+Identification would require parallel trends in the absence of the institutional change, including comparable trends across regions with different levels of historical plough use. Pre-treatment data would allow us to assess this assumption. Selective migration, pre-existing regional differences and other differential post-war shocks would also need to be addressed.
+
+This approach would provide more credible evidence on whether political institutions can weaken the persistence of historical gender norms. Nevertheless, it would not automatically identify the causal effect of historical plough adoption itself.
+
+For economic development, an analogous strategy would require exogenous variation in regional income that is independent of historical gender norms and does not directly affect gender outcomes through other channels. Such variation would help distinguish the moderating role of income from reverse causality and omitted variable bias.
 
 % ===========================================================================
 \section{Conclusion}
