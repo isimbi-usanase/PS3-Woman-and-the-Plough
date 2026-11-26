@@ -54,42 +54,17 @@
 % ===========================================================================
 \section{Introduction}
 % ===========================================================================
+% Problem
+Gender norms differ strongly across countries, even among countries with similar income levels. In 2000, female labour force participation was 16.1\% in Pakistan but 90.5\% in Burundi. Attitudes differ just as much: the share of people who agree that men should have priority when jobs are scarce ranges from 3.6\% in Iceland to 99.6\% in Egypt. Alesina, Giuliano and Nunn (2013) study where these differences come from and whether they persist over long periods.
 
-\instr{In this paragraph, you should introduce the paper and its results, as well as your evaluation and extension. Worksheet~A.1 helps you collect the key facts about the paper.}
+% Research question
+Their research question is whether traditional plough agriculture created persistent norms that women belong in the home. This tests a hypothesis first proposed by Ester Boserup (1970). Unlike the hoe used in shifting cultivation, the plough requires considerable upper-body strength and is difficult to combine with childcare. Men therefore worked in the fields while women specialised in work within the home, and this division of labour turned into a belief about women's appropriate role that persisted even after agriculture lost its importance.
 
-Gender norms differ strongly across countries, even among countries with similar income levels. In 2000,
-female labour force participation was 16.1% in Pakistan but 90.5% in Burundi. Attitudes differ just as
-much: the share of people who agree that men should have priority when jobs are scarce ranges from 3.6%
-in Iceland to 99.6% in Egypt. Alesina, Giuliano and Nunn (2013) study where these differences come from
-and whether they persist over long periods.
-Theirresearchquestioniswhethertraditionalploughagriculturecreatedpersistentnormsthatwomenbelong
-in the home. This tests a hypothesis first proposed by Ester Boserup (1970). Unlike the hoe used in shifting
-cultivation, the plough requires considerable upper-body strength and is difficult to combine with childcare.
-Men therefore worked in the fields while women specialised in work within the home, and this division of
-labour turned into a belief about women’s appropriate role that persisted even after agriculture lost its
-importance.
-The authors combine data from the Ethnographic Atlas on which ethnic groups traditionally used the plough
-with the current distribution of languages, which gives for each country the share of the population whose
-ancestors used the plough. They relate this share to female labour force participation, female firm ownership
-and women’s political participation, using OLS with historical and contemporary controls. To address the
-potential endogeneity of plough adoption, they also estimate 2SLS regressions, instrumenting plough use
-with how suitable ancestral land was for crops that benefit more or less from the plough. The relationship
-is consistently negative: a country whose population descends entirely from plough-using societies has,
-on average, 12.9 percentage points lower female labour force participation than a country with no plough
-tradition (Table IV, column 2, with continent fixed effects). Under 2SLS, the estimated difference rises to
-25.0 percentage points (Table VIII, column 2). Finally, children of immigrants with a plough heritage also
-work less and hold less equal gender attitudes, which supports cultural persistence as the channel.
-Using the authors’ data and the same specifications, we replicate the OLS and IV results for female labour
-force participation (Tables III, IV and VIII) exactly. In our extension, we test whether the plough effect
-depends on context by interacting plough use with an indicator for (former) communist countries and with
-income. Communist regimes actively pushed women into paid work, so if strong state policy can override
-cultural norms, the plough effect should be weaker there. We find no evidence of this: the interaction is
-close to zero (+1.2, SE 6.0), and within communist countries plough heritage is still associated with about
-13 percentage points lower female labour force participation. The interaction with income is also small and
-not significant. Both estimates are imprecise, however, so we cannot rule out sizeable differences. In our
-critical evaluation, we argue that the two main threats to the OLS estimate, pre-existing gender norms and
-measurement error, bias it in opposite directions, and that the exclusion restriction of the IV is questionable,
-so the negative sign of the effect is more credible than its exact size.
+% Method and findings
+The authors combine data from the Ethnographic Atlas on which ethnic groups traditionally used the plough with the current distribution of languages, which gives for each country the share of the population whose ancestors used the plough. They relate this share to female labour force participation, female firm ownership and women's political participation, using OLS with historical and contemporary controls. To address the potential endogeneity of plough adoption, they also estimate 2SLS regressions, instrumenting plough use with how suitable ancestral land was for crops that benefit more or less from the plough. The relationship is consistently negative: a country whose population descends entirely from plough-using societies has, on average, 12.9 percentage points lower female labour force participation than a country with no plough tradition (Table IV, column 2, with continent fixed effects). Under 2SLS, the estimated difference rises to 25.0 percentage points (Table VIII, column 2). Finally, children of immigrants with a plough heritage also work less and hold less equal gender attitudes, which supports cultural persistence as the channel.
+
+% Our contribution
+Using the authors' data and the same specifications, we replicate the OLS and IV results for female labour force participation (Tables III, IV and VIII) exactly. In our extension, we test whether the plough effect depends on context by interacting plough use with an indicator for (former) communist countries and with income. Communist regimes actively pushed women into paid work, so if strong state policy can override cultural norms, the plough effect should be weaker there. We find no evidence of this: with continent fixed effects, the interaction is small and not significant ($+3.1$, SE $6.1$). The implied plough effect is about $-11$ percentage points in (former) communist countries, compared with $-14.5$ in all other countries. The interactions for female firm ownership and women in politics are not significant either, and the interaction with income is also small and not significant. Both estimates are imprecise, however, so we cannot rule out sizeable differences. In our critical evaluation, we argue that the two main threats to the OLS estimate, pre-existing gender norms and measurement error, bias it in opposite directions, and that the exclusion restriction of the IV is questionable, so the negative sign of the effect is more credible than its exact size.
 
 % ===========================================================================
 \section{Data and Methodology}
@@ -154,18 +129,52 @@ so the negative sign of the effect is more credible than its exact size.
 % ===========================================================================
 \section{Critical Evaluation}
 % ===========================================================================
-
 \subsection{Threats to internal validity}
 
-\instr{Focus on the threat(s) to internal validity you consider most important. You can prepare this section with Worksheet~A.4 and Appendix~B.1.}
+The authors interpret the OLS coefficient as the causal effect of the plough on female labour force participation (FLFP). This requires that plough use is uncorrelated with the error term, conditional on the controls:
+\[
+E[\varepsilon_c \mid \text{Plough}_c, \mathbf{X}_c] = 0 .
+\]
+We discuss two reasons why this assumption may fail, and then ask whether the authors' IV strategy solves them.
 
-% Your text
+\paragraph{Threat 1: Pre-existing gender norms (OVB and simultaneous causality).}
+Gender norms may have existed before the plough was adopted. As the authors themselves acknowledge, male-dominated societies may have been more likely to adopt the plough, so causality could also run from norms to plough use. They address this with additional observable controls (Table VII), but these cannot capture norms that existed before the plough. Since such norms were passed down over generations, they also lower FLFP today directly. They are not included in the regression and are therefore part of the error term. Using the OVB formula,
+\[
+\text{bias} = \beta_z \cdot \frac{\operatorname{Cov}(\text{Plough}, z)}{\operatorname{Var}(\text{Plough})},
+\]
+plough use is positively correlated with unequal norms ($\operatorname{Cov} > 0$), and unequal norms reduce FLFP ($\beta_z < 0$). The bias is therefore negative, and OLS overstates the effect of the plough. To get a sense of its size, we can look at religion, one channel through which such norms are transmitted. Controlling for religion in Table VII (specification without continent fixed effects) reduces the coefficient from $-12.4$ to $-9.9$, about 20\%. Since religion is measured in 2000, it captures historical norms only partly, so the true bias may be larger. Our own calculation for an observed variable shows that such shifts are plausible: omitting income makes the coefficient more negative, from $-12.9$ to $-16.5$, and the OVB formula reproduces this difference exactly (bias term $-3.5$).
+
+\paragraph{Threat 2: Measurement error.}
+Plough use is reconstructed from historical ethnographic data. Each ethnic group is only coded as having used the plough or not, and these groups are then linked to today's countries through the ancestry of their populations. Both steps introduce measurement error. If the error is classical, it causes attenuation bias: the coefficient is pulled towards zero, and OLS understates the effect. This bias works in the opposite direction to Threat 1.
+
+\paragraph{Does the IV strategy solve these problems?}
+The authors instrument plough use with the suitability of ancestral land for crops that benefit strongly from the plough (wheat, barley, rye) and crops that benefit little (sorghum, millet). For this approach to work, the instruments must satisfy two conditions.
+
+First, they must not be driven by gender norms themselves. This condition is plausible: crop suitability is determined by geography, and societies could not choose their soil or climate. The instruments can therefore address the reverse causality problem from Threat 1, and IV also corrects for classical measurement error (Threat 2). The first stage is strong ($F = 25.1$), so the instruments are also relevant. The IV estimate ($-25.0$) is about twice as large in absolute value as OLS ($-12.9$), and a robust Hausman test confirms that the two differ significantly ($p = 0.04$). This contradicts Threat 1, which predicted that OLS overstates the effect, but is consistent with measurement error dominating.
+
+Second, the instruments must affect FLFP only through plough use (exclusion restriction), i.e.\ $\operatorname{Cov}(Z, \varepsilon) = 0$. This condition is harder to defend. Because crop suitability reflects geography, regions suited to plough-positive and plough-negative crops may also differ in other ways that affect gender roles directly, such as disease burden, economic development or the type of farm work the crops require. The authors control for overall agricultural suitability and tropical climate, but other differences may remain in the error term. In that case, IV faces a similar omitted variable problem as OLS, only now for the instrument instead of plough use.
+
+The data give some reason for concern. The Hansen J test rejects for FLFP ($J = 14.9$, $p < 0.001$), which suggests that at least one instrument is invalid. In particular, suitability for plough-negative crops barely predicts plough use (first stage: $0.18$, $p = 0.17$) but strongly predicts FLFP (reduced form: $19.6$, $p = 0.002$), which points to a direct effect that does not run through the plough. Since the exclusion restriction cannot be tested directly, these results do not prove that the instruments are invalid. Still, they suggest that the IV estimate should be interpreted with caution. Table~\ref{tab:threats} summarises the threats and their likely effect on the OLS estimate.
+
+\begin{table}[htbp]
+\centering
+\caption{Threats to internal validity and their likely effect on the OLS estimate}
+\label{tab:threats}
+\small
+\begin{tabular}{llll}
+\hline
+Threat & Direction of bias & Effect on $-12.9$ & Solved by IV? \\
+\hline
+Pre-existing norms & negative & overstated & only if exclusion restriction holds \\
+Measurement error & towards zero & understated & yes, if error is classical \\
+IV: exclusion restriction & unclear & -- & doubtful (Hansen J rejects) \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsection{Overall assessment}
 
-\instr{What do you think about the overall validity of the paper? Three or four sentences are enough.}
-
-% Your text
+Overall, we find the paper's main claim convincing in direction but not in magnitude. The two main threats bias the OLS estimate in opposite directions, and the IV strategy rests on a questionable exclusion restriction, so we cannot say whether $-12.9$ over- or understates the true effect. However, the negative relationship holds across several outcomes, many additional controls (Table VII) and our own extension, and the evidence on children of immigrants, who all live under the same institutions, makes a purely geographic or institutional explanation unlikely. We therefore consider it credible that traditional plough use contributed to today's gender norms, while the precise estimates should be interpreted with caution.
 
 % ===========================================================================
 \section{Extension and Robustness}
