@@ -1,7 +1,9 @@
 \begin{table}
-
-\caption{\label{tab:extension-export}Marginal plough effects in communist countries}
 \centering
+\caption{\label{tab:ext_marginal}Marginal plough effects in communist countries}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{9}{11}\selectfont
 \begin{tabular}[t]{llrrrrr}
 \toprule
 Outcome & Specification & Estimate & Robust SE & P-value & CI lower & CI upper\\
@@ -14,5 +16,6 @@ Female firm ownership & With FE & -19.065 & 9.114 & 0.036 & -36.928 & -1.203\\
 \addlinespace
 Women in parliament & With FE & -7.757 & 3.938 & 0.049 & -15.475 & -0.040\\
 \bottomrule
-\end{tabular}
+\multicolumn{7}{l}{\rule{0pt}{1em}Marginal effects are calculated as the sum of the plough and interaction coefficients. Confidence intervals use the normal approximation.}\\
+\end{tabular}}
 \end{table}
