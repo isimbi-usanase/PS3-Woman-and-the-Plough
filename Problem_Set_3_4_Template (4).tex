@@ -43,8 +43,8 @@
 % --- Table notes -----------------------------------------------------------
 \newcommand{\tablenotes}[1]{\par\vspace{4pt}{\footnotesize\textit{Notes:} #1\par}}
 
-\title{Replication of [Author(s) (Year)]:\\{} [Title of the Paper]}
-\author{[Your Name 1], [Your Name 2], [Your Name 3], [Your Name 4]}
+\title{Replication of [Alesina, Giuliano & Nunn (2013)]:\\{} On the Origins of Gender Rules: Women and the Plough}
+\author{Ginevra Bettata, Isimbi Elsa Usanase, Rahel Tiffany Gutzwiller, Leandra Shana Grossniklaus}
 
 \begin{document}
 \maketitle
@@ -221,29 +221,25 @@ Overall, we find the paper's main claim convincing in direction but not in magni
 \appendix
 \section{Replication Worksheets}
 % ===========================================================================
-
-\instr{Please fill in these worksheets and submit them together with your report. Keywords are sufficient. The worksheets do not count toward the page limit. Add rows or columns where your paper requires it.}
-
 \subsection{The paper at a glance}
-
 
 {\renewcommand{\arraystretch}{1.4}%
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.36\textwidth}L@{}}
 \toprule
 Field & Your entry \\
 \midrule
-Paper & [Author(s) (year), ``Title,'' \textit{Journal}, volume(issue), pages. DOI] \\
-Replication package & [Link to the replication package on, e.g., Zenodo, Harvard Dataverse] \\
-Additional data sources & [Link and access date to any additional data sources] \\
-Outcome ($Y$) & \\
-Treatment or variable of interest ($X$) & \\
-Unit of observation & [e.g.\ worker, firm, county-year] \\
-Setting and period & [country or market, sample years] \\
-Comparison & [who is compared with whom] \\
-Main method & [OLS / panel methods / IV-2SLS / combination] \\
-Result replicated & [e.g.\ Table 2, column 3; Figures 1 and 3] \\
-Software and version & [e.g.\ R 4.4, Stata 18, Python 3.12] \\
-Code & [Repository link or name of the code folder] \\
+Paper & Alesina, A., Giuliano, P.\ and Nunn, N.\ (2013), ``On the Origins of Gender Roles: Women and the Plough,'' \textit{Quarterly Journal of Economics}, 128(2), 469--530. DOI: 10.1093/qje/qjt005 \\
+Replication package & \textbf{[TO DO: link to the replication package we used]} (files: \texttt{replicationcode\_AGN.do}, \texttt{crosscountry\_dataset.dta}, README) \\
+Additional data sources & None \\
+Outcome ($Y$) & Female labour force participation in 2000 (also: female firm ownership, women in parliament) \\
+Treatment or variable of interest ($X$) & Traditional plough use: share of the population whose ancestors used the plough \\
+Unit of observation & Country \\
+Setting and period & Cross-section of up to 177 countries; outcomes measured around 2000; plough use from pre-industrial ethnographic data \\
+Comparison & Countries whose ancestors used the plough vs.\ countries whose ancestors did not, conditional on historical and contemporary controls \\
+Main method & OLS with continent fixed effects; IV-2SLS \\
+Result replicated & Table III (cols.\ 1--2), Table IV (cols.\ 1--2), Table VIII (Panels A--C, col.\ 2), Figure IVa (scatter plot) \\
+Software and version & \textbf{[TO DO: e.g.\ R 4.x]}; packages \texttt{sandwich}, \texttt{lmtest} and \texttt{ivreg} \textbf{[check: package \texttt{AER} or \texttt{ivreg}?]} \\
+Code & \textbf{[TO DO: repository link]} \\
 \bottomrule
 \end{tabularx}}
 
@@ -252,44 +248,40 @@ Code & [Repository link or name of the code folder] \\
 {\renewcommand{\arraystretch}{1.4}%
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}
   >{\raggedright\arraybackslash}p{0.25\textwidth}
-  >{\raggedright\arraybackslash}p{0.16\textwidth}
+>{\raggedright\arraybackslash}p{0.16\textwidth}
   L@{}}
 \toprule
 Role & Name in paper & Name in dataset & Definition and unit \\
 \midrule
-Outcome ($Y$) & & & \\
-Variable of interest ($X$) & & & \\
-Instrument ($Z$), if IV & & & \\
-Main controls ($W$) & & & \\
+Outcome ($Y$) & Female labor force participation & \texttt{flfp2000} & Share of women in the labour force in 2000, in \% (range 12.6--90.5) \\
+Variable of interest ($X$) & Traditional plough use & \texttt{plow} & Share of the population whose ancestors used the plough (Ethnographic Atlas v39, linked via Ethnologue, population-weighted); 0--1 \\
+Instrument ($Z$), if IV & Plough-positive / plough-negative environment & \texttt{plow\_\allowbreak positive\_\allowbreak crops}, \texttt{plow\_\allowbreak negative\_\allowbreak crops} & Suitability of ancestral land for crops that benefit strongly (wheat, barley, rye) or little (sorghum, millet) from the plough (FAO-GAEZ); 0--1 \\
+Main controls ($W$) & Historical: agricultural suitability, tropical climate, large animals, political hierarchies, economic complexity; contemporary: log income and its square; continent FE & \texttt{agricultural\_\allowbreak suitability}, \texttt{tropical\_\allowbreak climate}, \texttt{large\_\allowbreak animals}, \texttt{political\_\allowbreak hierarchies}, \texttt{economic\_\allowbreak complexity}, \texttt{ln\_\allowbreak income}, \texttt{ln\_\allowbreak income\_\allowbreak squared}, \texttt{continent} & Ancestry-weighted ethnographic and geographic measures; log real GDP per capita in 2000 \\
 \bottomrule
 \end{tabularx}}
 
 \medskip\noindent
-Sample: [N] observations, [number] units, [number] periods.
+Sample: 165 observations (OLS, Table IV) and 160 observations (IV, Table VIII); 165 countries; 1 period (cross-section).
 
 \subsection{Reconciling differences}
-
-Importantly, here you do not have to check everything. In the main text, please explain where you believe the difference between your results is coming from based on the suggestions.
 
 {\renewcommand{\arraystretch}{1.4}%
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.45\textwidth}L>{\raggedright\arraybackslash}p{0.15\textwidth}@{}}
 \toprule
 Possible source & What we checked & Effect on $\beta$ \\
 \midrule
-Data version & & \\
-Sample restrictions and missing values & & \\
-Construction of variables (definitions, deflators, logs of zero) & & \\
-Sample weights & & \\
-Fixed effects and dropped singletons & & \\
-Standard errors (clustering, small-sample corrections) & & \\
-Software defaults (Stata, R, Python) & & \\
-Other (specify) & & \\
+Data version & Used the authors' original dataset from the replication package & None \\
+Sample restrictions and missing values & Listwise deletion as in the original code; N matches (177 / 165 / 160) & None \\
+Construction of variables (definitions, deflators, logs of zero) & Used the authors' constructed variables; no new variables created & None \\
+Sample weights & No weights in original or replication & None \\
+Fixed effects and dropped singletons & Continent dummies with Africa as base category, as in Stata & None \\
+Standard errors (clustering, small-sample corrections) & OLS: HC1 (= Stata \texttt{, r}); IV: HC0 (= Stata \texttt{ivreg2, r}, no small-sample correction) & None; SEs match exactly \\
+Software defaults (Stata, R, Python) & Original in Stata, replication in R; coefficients and SEs identical & None \\
+Other (specify) & -- & -- \\
 \bottomrule
 \end{tabularx}}
 
 \subsection{Threats to internal validity}
-
-Importantly, also here you do not have to check everything but what you consider to be most important.
 
 {\renewcommand{\arraystretch}{1.4}%
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.18\textwidth}
@@ -300,16 +292,17 @@ Importantly, also here you do not have to check everything but what you consider
 \toprule
 Threat & Potential mechanism in this paper & Direction of bias & Addressed by the authors & Convincing? \\
 \midrule
-Omitted variable(s) & & & & \\
-Reverse causality & & & & \\
-Measurement error & & & & \\
-Sample selection & & & & \\
-Other (specify) & & & & \\
+Omitted variable(s) & Pre-existing gender norms (e.g.\ transmitted through religion) lower FLFP today and are correlated with plough use & Negative (OLS overstates) & Extra controls in Table VII (religion: $-12.4 \to -9.9$); IV & Partly: no control for pre-plough norms \\
+Reverse causality & Male-dominated societies more likely to adopt the plough & Negative (OLS overstates) & IV with crop suitability (norms cannot change geography) & Partly: depends on exclusion restriction \\
+Measurement error & Coarse 0/1 ethnographic coding; ancestry mapping to today's countries & Towards zero (OLS understates) & IV; could explain IV $>$ OLS & Yes, if error is classical \\
+Sample selection & Countries with missing data dropped (177 $\to$ 165 $\to$ 160; smaller samples for ownership and politics) & Unclear & Robustness to different treatments of missing language data & Mostly \\
+Other: invalid instruments & Crop suitability reflects geography, which may affect FLFP directly (disease, development, type of farm work) & Unclear & Controls for agricultural suitability and tropical climate & No: Hansen J rejects ($p < 0.001$); plough-negative crops predict FLFP but not plough use \\
 \bottomrule
 \end{tabularx}}
 
 \subsection{Reproducibility checklist}
 
+% Replace $\square$ by $\boxtimes$ (needs \usepackage{amssymb}) for each item you fulfil.
 \begin{itemize}[label=$\square$, leftmargin=*, itemsep=2pt]
   \item A README file describes the folder structure, the software and package versions, and the order in which the scripts are run.
   \item One master script runs the whole analysis, starting from the raw data.
@@ -319,8 +312,7 @@ Other (specify) & & & & \\
   \item Random seeds are set wherever results depend on simulation or bootstrapping.
 \end{itemize}
 
-\textit{Use of AI tools (optional).} [Two or three sentences on how you used AI
-tools.]
+\textit{Use of AI tools (optional).} \textbf{[TO DO: adapt so it describes honestly how your group used AI.]} We used Claude (Anthropic) to discuss the paper's methods and our critical evaluation, to check our numbers against the original replication files, and to edit the language and LaTeX formatting of the report. All regressions were run by us in R, and we checked all reported results against our own output.
 
 % ===========================================================================
 \clearpage
