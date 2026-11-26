@@ -1,0 +1,497 @@
+---
+title: "4.extention"
+output:
+  pdf_document: default
+  html_document: default
+date: "2026-11-26"
+---
+
+---
+title: "Extension - Heterogeneity of the Plough Effect"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Extension (e): Heterogeneity of the plough effect
+
+## Setup
+
+```{r extension-setup, message=FALSE, warning=FALSE}
+library(haven)
+library(dplyr)
+library(fixest)
+library(knitr)
+library(kableExtra)
+
+dir.create("tables", showWarnings = FALSE)
+```
+
+## Load and prepare the data
+
+```{r extension-data}
+d <- read_dta("crosscountry_dataset.dta") |>
+  zap_labels() |>
+  mutate(
+    continent = factor(continent),
+    ln_income_c = ln_income - mean(ln_income, na.rm = TRUE)
+  )
+```
+
+## Control variables
+
+The extension builds on the Table IV specification, including
+historical and contemporary income controls.
+
+```{r extension-controls}
+setFixest_fml(
+  ..hist = ~ agricultural_suitability + tropical_climate +
+    large_animals + political_hierarchies + economic_complexity,
+  ..inc = ~ ln_income + ln_income_squared
+)
+```
+
+## Plough x Communism
+
+### Without continent fixed effects
+
+```{r communism-no-fe}
+m_comm <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * communist_dummy + ..hist + ..inc,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+### With continent fixed effects
+
+```{r communism-fe}
+m_comm_fe <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * communist_dummy + ..hist + ..inc | continent,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+### Marginal plough effect in communist countries
+
+```{r communism-marginal-effects}
+lincom <- function(m) {
+
+  b <- coef(m)
+  V <- vcov(m)
+
+  a <- "plow"
+  i <- "plow:communist_dummy"
+
+  est <- b[a] + b[i]
+
+  se <- sqrt(
+    V[a, a] + V[i, i] + 2 * V[a, i]
+  )
+
+  c(
+    estimate = unname(est),
+    se = unname(se),
+    p_value = unname(2 * pnorm(-abs(est / se))),
+    CI_lower = unname(est - 1.96 * se),
+    CI_upper = unname(est + 1.96 * se)
+  )
+}
+
+marginal_no_fe <- as.data.frame(
+  t(sapply(as.list(m_comm), lincom))
+)
+
+marginal_fe <- as.data.frame(
+  t(sapply(as.list(m_comm_fe), lincom))
+)
+
+outcomes <- c(
+  "FLFP 2000",
+  "Female firm ownership",
+  "Women in parliament"
+)
+
+marginal_no_fe$Outcome <- outcomes
+marginal_no_fe$Specification <- "Without FE"
+
+marginal_fe$Outcome <- outcomes
+marginal_fe$Specification <- "With FE"
+
+marginal_table <- bind_rows(
+  marginal_no_fe,
+  marginal_fe
+) |>
+  select(
+    Outcome,
+    Specification,
+    estimate,
+    se,
+    p_value,
+    CI_lower,
+    CI_upper
+  )
+
+colnames(marginal_table) <- c(
+  "Outcome",
+  "Specification",
+  "Estimate",
+  "Robust SE",
+  "P-value",
+  "CI lower",
+  "CI upper"
+)
+```
+
+## Plough x Income
+
+### Without continent fixed effects
+
+```{r income-no-fe}
+m_inc <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * ln_income_c + I(ln_income_c^2) + ..hist,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+### With continent fixed effects
+
+```{r income-fe}
+m_inc_fe <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * ln_income_c + I(ln_income_c^2) + ..hist |
+    continent,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+## Regression table functions
+
+```{r extension-table-functions}
+# Statistical significance stars
+
+add_stars <- function(p) {
+  ifelse(
+    p < 0.01, "***",
+    ifelse(
+      p < 0.05, "**",
+      ifelse(p < 0.10, "*", "")
+    )
+  )
+}
+
+# Extract coefficients and regression statistics
+
+format_extension <- function(model, variables, fe) {
+
+  results <- coeftable(model)
+
+  cells <- unlist(lapply(variables, function(v) {
+
+    if (v %in% rownames(results)) {
+
+      c(
+        sprintf(
+          "%.3f%s",
+          results[v, 1],
+          add_stars(results[v, 4])
+        ),
+        sprintf(
+          "(%.3f)",
+          results[v, 2]
+        )
+      )
+
+    } else {
+
+      c("", "")
+
+    }
+  }))
+
+  c(
+    cells,
+    "Yes",
+    "Yes",
+    ifelse(fe, "Yes", "No"),
+    as.character(nobs(model)),
+    sprintf("%.3f", r2(model, "ar2")),
+    sprintf("%.3f", r2(model, "r2"))
+  )
+}
+
+# Construct regression table
+
+build_extension_table <- function(models, labels) {
+
+  table_data <- data.frame(
+
+    Variable = c(
+      as.vector(rbind(unname(labels), "")),
+      "Historical controls",
+      "Income controls",
+      "Continent fixed effects",
+      "Observations",
+      "Adjusted R-squared",
+      "R-squared"
+    ),
+
+    sapply(seq_along(models), function(i) {
+
+      format_extension(
+        model = models[[i]],
+        variables = names(labels),
+        fe = i > 3
+      )
+
+    }),
+
+    check.names = FALSE
+  )
+
+  colnames(table_data) <- c(
+    "",
+    "(1)", "(2)", "(3)",
+    "(4)", "(5)", "(6)"
+  )
+
+  table_data
+}
+
+# Common table formatting for HTML and PDF
+
+
+display_extension_table <- function(
+    table_data,
+    table_title,
+    format = NULL
+) {
+
+  tab <- kbl(
+    table_data,
+    format = format,
+    booktabs = TRUE,
+    linesep = "",
+    align = c("l", rep("c", 6)),
+    row.names = FALSE,
+    caption = table_title
+  ) |>
+    add_header_above(c(
+      " " = 1,
+      "FLFP" = 1,
+      "Ownership" = 1,
+      "Politics" = 1,
+      "FLFP " = 1,
+      "Ownership " = 1,
+      "Politics " = 1
+    )) |>
+    add_header_above(c(
+      " " = 1,
+      "Without continent FE" = 3,
+      "With continent FE" = 3
+    ))
+
+  is_latex <- if (is.null(format)) {
+    knitr::is_latex_output()
+  } else {
+    format == "latex"
+  }
+
+  if (is_latex) {
+
+    tab <- tab |>
+      kable_styling(
+        latex_options = "scale_down",
+        full_width = FALSE,
+        font_size = 9
+      ) |>
+      footnote(
+        general = paste(
+          "Heteroskedasticity-robust standard errors",
+          "in parentheses.",
+          "*** p $<$ 0.01, ** p $<$ 0.05,",
+          "* p $<$ 0.10."
+        ),
+        general_title = "",
+        escape = FALSE
+      )
+
+  } else {
+
+    tab <- tab |>
+      kable_classic(
+        full_width = FALSE,
+        html_font = "Times New Roman"
+      ) |>
+      footnote(
+        general = paste(
+          "Heteroskedasticity-robust standard errors",
+          "in parentheses.",
+          "*** p < 0.01, ** p < 0.05,",
+          "* p < 0.10."
+        ),
+        general_title = ""
+      )
+
+  }
+
+  tab
+}
+```
+
+## Table A - Heterogeneity by communist history
+
+```{r table-communism-data}
+comm_labels <- c(
+  plow = "Traditional plough use",
+  communist_dummy = "Communist history",
+  "plow:communist_dummy" = "Plough x Communist"
+)
+
+comm_models <- c(
+  as.list(m_comm),
+  as.list(m_comm_fe)
+)
+
+comm_table <- build_extension_table(
+  models = comm_models,
+  labels = comm_labels
+)
+```
+
+```{r table-communism-display, echo=FALSE, results='asis'}
+display_extension_table(
+  table_data = comm_table,
+  table_title = "Heterogeneity by communist history"
+)
+```
+
+## Table B - Heterogeneity by economic development
+
+```{r table-income-data}
+inc_labels <- c(
+  plow = "Traditional plough use",
+  ln_income_c = "Log income (centred)",
+  "plow:ln_income_c" = "Plough x Log income"
+)
+
+inc_models <- c(
+  as.list(m_inc),
+  as.list(m_inc_fe)
+)
+
+inc_table <- build_extension_table(
+  models = inc_models,
+  labels = inc_labels
+)
+```
+
+```{r table-income-display, echo=FALSE, results='asis'}
+display_extension_table(
+  table_data = inc_table,
+  table_title = "Heterogeneity by economic development"
+)
+```
+
+## Table C - Marginal plough effects in communist countries
+
+```{r table-marginal-display, echo=FALSE, results='asis'}
+marginal_display <- kbl(
+  marginal_table,
+  digits = 3,
+  booktabs = TRUE,
+  row.names = FALSE,
+  caption = "Marginal plough effects in communist countries"
+)
+
+if (knitr::is_latex_output()) {
+
+  marginal_display |>
+    kable_styling(
+      latex_options = "scale_down",
+      full_width = FALSE,
+      font_size = 9
+    ) |>
+    footnote(
+      general = paste(
+        "Marginal effects are calculated as the sum",
+        "of the plough and interaction coefficients.",
+        "Confidence intervals use the normal approximation."
+      ),
+      general_title = ""
+    )
+
+} else {
+
+  marginal_display |>
+    kable_classic(
+      full_width = FALSE,
+      html_font = "Times New Roman"
+    ) |>
+    footnote(
+      general = paste(
+        "Marginal effects are calculated as the sum",
+        "of the plough and interaction coefficients.",
+        "Confidence intervals use the normal approximation."
+      ),
+      general_title = ""
+    )
+
+}
+```
+
+## Export regression tables
+
+```{r extension-export, message=FALSE, warning=FALSE}
+# Export Table A
+
+latex_comm <- display_extension_table(
+  table_data = comm_table,
+  table_title = "Heterogeneity by communist history",
+  format = "latex"
+)
+
+writeLines(
+  as.character(latex_comm),
+  "tables/table_extension_communism.tex"
+)
+
+# Export Table B
+
+latex_inc <- display_extension_table(
+  table_data = inc_table,
+  table_title = "Heterogeneity by economic development",
+  format = "latex"
+)
+
+writeLines(
+  as.character(latex_inc),
+  "tables/table_extension_income.tex"
+)
+
+# Export Table C
+
+latex_marginal <- kbl(
+  marginal_table,
+  format = "latex",
+  digits = 3,
+  booktabs = TRUE,
+  row.names = FALSE,
+  caption = "Marginal plough effects in communist countries"
+)
+
+writeLines(
+  as.character(latex_marginal),
+  "tables/table_extension_marginal_effects.tex"
+)
+
+# Verify that the tables have been exported
+
+list.files("tables")
+```
