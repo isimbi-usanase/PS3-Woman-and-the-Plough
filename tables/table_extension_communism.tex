@@ -1,0 +1,30 @@
+\begin{table}
+\centering
+\caption{\label{tab:extension-export}Heterogeneity by communist history}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{9}{11}\selectfont
+\begin{tabular}[t]{lcccccc}
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{3}{c}{Without continent FE} & \multicolumn{3}{c}{With continent FE} \\
+\cmidrule(l{3pt}r{3pt}){2-4} \cmidrule(l{3pt}r{3pt}){5-7}
+\multicolumn{1}{c}{ } & \multicolumn{1}{c}{FLFP} & \multicolumn{1}{c}{Ownership} & \multicolumn{1}{c}{Politics} & \multicolumn{1}{c}{FLFP } & \multicolumn{1}{c}{Ownership } & \multicolumn{1}{c}{Politics } \\
+\cmidrule(l{3pt}r{3pt}){2-2} \cmidrule(l{3pt}r{3pt}){3-3} \cmidrule(l{3pt}r{3pt}){4-4} \cmidrule(l{3pt}r{3pt}){5-5} \cmidrule(l{3pt}r{3pt}){6-6} \cmidrule(l{3pt}r{3pt}){7-7}
+ & (1) & (2) & (3) & (4) & (5) & (6)\\
+\midrule
+Traditional plough use & -14.173*** & -16.033*** & -4.914*** & -14.499*** & -15.599*** & -4.390**\\
+ & (3.261) & (4.167) & (1.861) & (4.043) & (5.453) & (2.126)\\
+Communist history & 5.555 & 4.450 & 3.493 & 5.468 & 3.570 & 4.339*\\
+ & (4.739) & (5.699) & (2.607) & (4.448) & (5.858) & (2.595)\\
+Plough x Communist & 1.239 & -0.221 & -1.592 & 3.074 & -3.467 & -3.368\\
+ & (5.960) & (8.864) & (3.839) & (6.103) & (9.650) & (3.962)\\
+Historical controls & Yes & Yes & Yes & Yes & Yes & Yes\\
+Income controls & Yes & Yes & Yes & Yes & Yes & Yes\\
+Continent fixed effects & No & No & No & Yes & Yes & Yes\\
+Observations & 164 & 122 & 143 & 164 & 122 & 143\\
+Adjusted R-squared & 0.385 & 0.105 & 0.271 & 0.383 & 0.115 & 0.276\\
+R-squared & 0.422 & 0.179 & 0.322 & 0.439 & 0.225 & 0.352\\
+\bottomrule
+\multicolumn{7}{l}{\rule{0pt}{1em}Heteroskedasticity-robust standard errors in parentheses. *** p $<$ 0.01, ** p $<$ 0.05, * p $<$ 0.10.}\\
+\end{tabular}}
+\end{table}
