@@ -136,17 +136,25 @@ We learn that plough ancestry is strongly associated with lower female labour fo
 
 \subsection{IV results}\label{sec:iv}
 
-The replication of Table VIII, column (2), of Alesina, Giuliano and Nunn (2013) use a sample of 160 countries and includes historical controls, contemporary controls and continent fixed effects.
+\begin{table}[H]
+  \centering
+  \vspace{-4pt}
+  \caption{IV replication of Alesina et al.\ (2013), Table VIII, column (2)}
+  \label{tab:iv_replication}
+  \small
+  \renewcommand{\arraystretch}{1}
+  \setlength{\tabcolsep}{11.5pt}
+  \input{tables/table_iv_replication.tex}
 
-In the first stage (Panel A), the suitability of ancestral lands for crops for which the plough was more advantageous predicts traditional plough use more strongly than suitability for crops for which it was less advantageous. The coefficients are respectively 0.629 and 0.185 and the difference between them is statistically significant ($p=0.00267$). The joint F-statistic of 25.06 supports the relevance of the instruments.
+  \tablenotes{All models use the same 160 countries and include historical controls, contemporary income controls and continent fixed effects. The first-stage outcome is traditional plough use. The outcome in the other models is female labour force participation in 2000.}
+\end{table}
 
-In the reduced form (Panel B), the two measures of crop suitability are associated with female labour force participation in opposite directions. The coefficients are $-11.299$ and 19.571 and both are statistically significant at the 1\% level ($p=0.0093$ and $p=0.0024$).
-
-The author's table assigns two stars to the coefficient of $-11.299$, indicating significance at 5\% level, even though the coefficient and its robust standard error of 4.285 match our replication after rounding.
-
-In the second stage (Panel C), the 2SLS coefficient is $-25.01$, with a robust standard error of 7.513 ($p=0.0011$). Both values match the published results after approximation. Using the same sample, controls and fixed effects, the OLS coefficient is $-12.089$, with a robust standard error of 3.587. A 10 percentage point increase in the share of the population whose ancestors used the plough corresponds to a female labour force participation rate in 2000 that is about 1.2 percentage points lower according to the OLS estimate and about 2.5 percentage points lower according to the IV estimate.
-
-The Hausman test ($p=0.0406$) rejects the null hypothesis that traditional plough use is exogenous at the 5\% level, conditional on instrument validity. The Hansen J test ($J=14.861$, $p=0.000116$) rejects the overidentifying restrictions. Under the estimated model, the data are therefore difficult to reconcile with the assumption that both instruments are uncorrelated with the error term. One possible explanation is that suitability for certain crops influenced female labour force participation through other channels, such as economic development. The test leaves open which instrument or channel accounts for the rejection. This result calls for caution in interpreting both the Hausman test and the IV estimate as evidence of a causal effect.
+Table~\ref{tab:iv_replication} shows that suitability for plough-positive crops is the stronger first-stage predictor of traditional plough use and the joint first-stage $F$-statistic of 25.06 supports instrument
+relevance.
+In the reduced form, the two crop-suitability measures are associated with female labour force participation in opposite directions.
+A 10-percentage-point increase in traditional plough use corresponds to about 2.5 percentage points lower female labour force participation in the 2SLS model, compared with 1.2 percentage points in OLS on the same
+sample.
+The Hansen $J$ test rejects the overidentifying restrictions, which calls for caution when interpreting the 2SLS estimate as causal or relying on the Hausman test, whose interpretation assumes valid instruments.
 
 % ===========================================================================
 \section{Critical Evaluation}
