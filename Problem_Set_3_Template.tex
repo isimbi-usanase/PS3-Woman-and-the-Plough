@@ -213,7 +213,6 @@ We find the paper's main claim convincing in direction but not in magnitude. The
 
 If the plough effect reflects persistent cultural norms, it should be difficult to change. We test this with two moderators. First, communist regimes actively pushed women into paid work through ideology, childcare and labour market policy, so the plough effect should be weaker in countries with a communist history. Second, economic development may weaken traditional gender roles, so the plough effect should shrink as income rises.
 
-\paragraph{Empirical strategy.}
 We extend our main specification (Table IV, column 2, of the paper) with an interaction between plough use and a moderator $Z_c$:
 \begin{equation}
     Y_c = \alpha + \beta_1 Plough_c + \beta_2 Z_c + \beta_3 (Plough_c \times Z_c) + X_c'\gamma + \mu_{continent} + \varepsilon_c ,
@@ -251,12 +250,10 @@ $R^2$ & 0.439 & 0.225 & 0.352 & 0.416 & 0.222 & 0.383 \\
 \tablenotes{OLS estimates of equation~\eqref{eq:extension} with historical controls, income controls and continent fixed effects. Heteroskedasticity-robust standard errors in parentheses. * $p<0.10$, ** $p<0.05$, *** $p<0.01$.}
 \end{table}
 
-\paragraph{Results.}
 Table~\ref{tab:ext} shows no evidence that communism weakened the plough effect. For FLFP, the interaction is small and not significant ($3.07$, SE $6.10$), and the plough effect remains negative and significant in communist countries ($-11.4$, SE $5.6$) compared with $-14.5$ elsewhere. The interactions for firm ownership and politics are not significant either. Since the standard errors are large, we cannot rule out sizeable differences between the two groups. Without continent fixed effects, the results are very similar.
 
 The income interactions are negative, not positive as expected, and not significant for FLFP and firm ownership. Only for women in parliament is the interaction significant ($-3.43$, SE $0.95$), which suggests a stronger plough effect in richer countries. As this is one of six interactions, we treat it as suggestive. Income is also a problematic moderator, because it may itself be partly caused by the plough (Section~4).
 
-\paragraph{Limitations.}
 These estimates are conditional associations, not causal effects: communist history was not randomly assigned and may capture other historical or institutional differences that continent fixed effects do not remove. In addition, the extension inherits the threats to the plough coefficient discussed in Section~4. Insignificant interactions therefore do not show that the plough effect is the same everywhere.
 
 \subsection{Ideal empirical strategy}
@@ -266,7 +263,7 @@ A natural comparison would be East and West Germany, but almost all Germans desc
     Y_{i} = \alpha + \beta_1 Plough_{o(i)} + \beta_2 Comm_{o(i)} + \beta_3 (Plough_{o(i)} \times Comm_{o(i)}) + X_i'\gamma + \mu_{h(i)} + \varepsilon_{i} ,
     \label{eq:ideal_strategy}
 \end{equation}
-where $o(i)$ is the parents' origin country, $h(i)$ the host country and $X_i$ individual characteristics such as age and education. Because all women face the same institutions and labour markets in the host country, $\beta_3$ captures whether parents' exposure to communism weakened the transmission of plough-based norms. Communist origins vary in plough heritage, for example China and Vietnam compared with Mozambique or Kyrgyzstan, which provides the variation the German case lacks. The main threats are selective emigration from communist countries and the small number of origin countries, so standard errors should be clustered by origin country.
+where $o(i)$ is the parents' origin country, $h(i)$ the host country and $X_i$ individual characteristics such as age and education. Because all women face the same institutions and labour markets in the host country, $\beta_3$ captures whether parents' exposure to communism weakened the transmission of plough-based norms. It thus compares women whose parents came from communist and non-communist countries with similar plough heritage. Communist origins vary in plough heritage, for example China and Vietnam compared with Mozambique or Kyrgyzstan, which provides the variation the German case lacks. The main threats are selective emigration from communist countries and the small number of origin countries, so standard errors should be clustered by origin country.
 % ===========================================================================
 \section{Conclusion}
 % ===========================================================================
