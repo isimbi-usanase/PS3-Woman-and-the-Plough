@@ -26,6 +26,11 @@
 \titlespacing*{\section}{0pt}{12pt}{6pt}
 \titlespacing*{\subsection}{0pt}{8pt}{4pt}
 
+% Float placement: allow tables/figures to fill pages more fully
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.85}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 \usepackage{tabularx}
@@ -47,10 +52,11 @@
 \renewcommand{\arraystretch}{1.25}
 
 % --- Table notes -----------------------------------------------------------
-\newcommand{\tablenotes}[1]{\par\vspace{4pt}{\footnotesize\textit{Notes:} #1\par}}
+\newcommand{\tablenotes}[1]{\par\vspace{4pt}{\raggedright\footnotesize\textit{Notes:} #1\par}}
 
-\title{Replication of Alesina, Giuliano \& Nunn (2013):\\{} On the Origins of Gender Roles: Women and the Plough}
-\author{\begin{tabular}{c@{\hspace{2.5em}}c}Ginevra Bettata & Isimbi Elsa Usanase\\ Leandra Shana Grossniklaus & Rahel Tiffany Gutzwiller\end{tabular}}
+\title{\Large Replication of Alesina, Giuliano \& Nunn (2013):\\{} On the Origins of Gender Roles: Women and the Plough}
+\author{\normalsize\begin{tabular}{c@{\hspace{2em}}c}Ginevra Bettata (22-211-460) & Isimbi Elsa Usanase (23-317-480)\\ Leandra Shana Grossniklaus (23-708-589) & Rahel Tiffany Gutzwiller (23-734-254)\end{tabular}}
+\date{\normalsize\today}
 
 \predisplaypenalty=0
 \begin{document}
@@ -103,7 +109,7 @@ The second threat is that the exclusion may not hold. Geography may have shaped 
 
 \instr{This part should include your main replication table (Table~\ref{tab:main}) and figure(s) (at least Figure~\ref{fig:main}). Replicate at least what you consider the main column of the main results table, as well as one or two figures that visualize the result. Do your results differ? Worksheet~A.3 helps you think about why they might differ. It is fine if you cannot replicate a number exactly, as long as you understand why.}
 
-We first replicate the authors' OLS estimates of the relationship between traditional plough use and female labour force participation in 2000. Because plough use is measured as the share of each country's population with plough-using ancestors, the analysis is a cross-country regression with one observation per country. Our main specification estimates equation~\eqref{eq:ols} on 165 countries. Besides plough use, it includes the historical controls, which describe how the ancestors lived, and income, which captures today's level of development. The continent fixed effects mean that each country is only compared with countries on the same continent, so broad regional differences, for example between Africa and Europe, cannot drive the result. As in the paper, standard errors are robust to heteroskedasticity. Table~\ref{tab:main} presents the estimated regressions side by side. Columns (1) and (2) replicate Table III in the paper, which does not yet include income as a contemporary control. Columns (3) and (4) replicate Table IV in the paper, which adds income. Columns (2) and (4) include continent fixed effects, and column (4), which corresponds to Table IV, column (2) in the paper, is our main specification.
+We first replicate the authors' OLS estimates of the relationship between traditional plough use and female labour force participation in 2000. Our main specification estimates equation~\eqref{eq:ols} on 165 countries. The continent fixed effects mean that each country is only compared with countries on the same continent. As in the paper, standard errors are robust to heteroskedasticity. Columns (1) and (2) of Table~\ref{tab:main} replicate Table III in the paper, which does not yet include income as a contemporary control. Columns (3) and (4) replicate Table IV in the paper, which adds income. Column (4), which corresponds to Table IV, column (2) in the paper, is our main specification.
 
 \begin{table}[H]
   \centering
@@ -116,11 +122,11 @@ We first replicate the authors' OLS estimates of the relationship between tradit
   \input{tables/table_ols_replication.tex}
 \end{table}
 
-We obtain the same coefficients and standard errors as the authors, up to the third decimal, since we use the data used by the authors and the same specification. The only exception is the adjusted R-squared in column (1), where we obtain 0.19 instead of 0.20, a rounding difference. In our main specification, the coefficient on traditional plough use is $-12.93$ (SE 3.54). Going from a country where no ancestors used the plough to one where all did is associated, on average, with a 12.93 percentage points lower female labour force participation rate, holding the controls and the continent constant. A one-standard-deviation increase in plough use (0.47) is associated with a 6.10 percentage points lower rate, which is about 12\% of the average participation rate of 51.35\%. The coefficient is statistically significant at the 1\% level ($t = -3.66$; 95\% confidence interval from $-19.92$ to $-5.94$) and economically large. The estimate is also stable, as it lies between $-12.4$ and $-16.0$ in all four columns. With respect to our research question, the results show that countries with a plough tradition have markedly lower female labour force participation today. So far, however, this is a correlation and not yet proof of a causal effect.
+We obtain the same coefficients and standard errors as the authors, up to the third decimal, since we use the data used by the authors and the same specification. The only exception is the adjusted R-squared in column (1), where we obtain 0.19 instead of 0.20, a rounding difference. In our main specification, the coefficient on traditional plough use is $-12.93$ (SE 3.54). Going from a country where no ancestors used the plough to one where all did is associated, on average, with a 12.93 percentage points lower female labour force participation rate, holding the controls and the continent constant. A one-standard-deviation increase in plough use (0.47) is associated with a 6.10 percentage points lower rate, which is about 12\% of the average participation rate of 51.35\%. The coefficient is statistically significant at the 1\% level ($t = -3.66$; 95\% confidence interval from $-19.92$ to $-5.94$) and economically large. The estimate is also stable, as it lies between $-12.4$ and $-16.0$ in all four columns. So far, however, this is a correlation and not yet proof of a causal effect.
 
-Figure~\ref{fig:main} shows this relationship graphically. A simple scatter plot of participation against plough use would also reflect differences in the controls, for example that plough countries differ in income and climate. To show only the relationship that the regression measures, we first remove from both variables the part that the controls can explain and then plot the remaining residuals against each other. By the Frisch--Waugh--Lovell theorem, the slope of the fitted line equals the OLS coefficient. The figure replicates Figure IVa of the paper, which is based on Table IV, column (1) in the paper and has no continent fixed effects. It reproduces the published figure with the same slope of $-12.40$. The negative relationship is visible across many countries.
+Figure~\ref{fig:main} shows this relationship graphically. To show only the relationship that the regression measures, we first remove from both variables the part that the controls can explain and then plot the remaining residuals against each other. By the Frisch--Waugh--Lovell theorem, the slope of the fitted line equals the OLS coefficient. The figure replicates Figure IVa of the paper, which is based on Table IV, column (1) in the paper and has no continent fixed effects. It reproduces the published figure with the same slope of $-12.40$. The negative relationship is visible across many countries.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
   \caption{Partial regression plot of female labour force participation in 2000 on traditional plough use (replication of Figure IVa)}
   \label{fig:main}
@@ -132,7 +138,7 @@ We learn that plough ancestry is strongly associated with lower female labour fo
 
 \subsection{IV results}\label{sec:iv}
 
-\begin{table}[H]
+\begin{table}[htbp]
   \centering
   \vspace{-4pt}
   \caption{IV replication of Alesina et al.\ (2013), Table VIII, column (2)}
@@ -185,20 +191,20 @@ The instruments are the suitability of ancestral land for crops that benefit str
 
 However, the IV is only valid if crop suitability affects FLFP solely through plough use, i.e.\ $\operatorname{Cov}(Z, \varepsilon) = 0$. Because crop suitability reflects geography, regions suited to plough-positive and plough-negative crops may also differ in disease burden, economic development or the type of farm work the crops require. The authors control for overall agricultural suitability and tropical climate, but other differences may remain in the error term, and the data support this concern. The Hansen J test rejects ($J = 14.9$, $p < 0.001$), and suitability for plough-negative crops barely predicts plough use (first stage: $0.18$, $p = 0.17$) but strongly predicts FLFP (reduced form: $19.6$, $p = 0.002$). This points to a direct effect that does not run through the plough. Since Hansen J only tests whether the two instruments agree, it could not detect a case where both are invalid in the same way. Table~\ref{tab:threats} summarises the threats.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Threats to internal validity and their likely effect on the OLS estimate}
 \label{tab:threats}
 \small
 \begin{tabular}{llll}
-\hline
+\toprule
 Threat & Direction of bias & Effect on $-12.9$ & Solved by IV? \\
-\hline
+\midrule
 Pre-existing norms & negative & overstated & only if exclusion restriction holds \\
 Development and income & negative ($-3.5$) & controlled for & observed; possibly a bad control \\
 Measurement error & towards zero & understated & yes, if error is classical \\
 IV: exclusion restriction & unclear & -- & doubtful (Hansen J rejects) \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -382,82 +388,5 @@ Other: invalid instruments & Crop suitability reflects geography, which may affe
 \end{itemize}
 
 \textit{Use of AI tools.} We used Claude (Anthropic) to discuss the paper's methods, to check our reasoning and numbers against the original replication files, and to help edit parts. All regressions were run by us in R, and we reviewed and verified all text and results in the report.
-
-% ===========================================================================
-\clearpage
-\section{Notes on Methods}
-% ===========================================================================
-
-\instr{Delete this appendix before submitting.}
-
-\subsection{Guide to evaluate identification methods}
-
-
-\paragraph{Step 1: What is the model?}
-Write the authors' main specification in one of the forms we used in class:
-\begin{align*}
-  \text{OLS:} \quad & y_i = x_i'\beta + \varepsilon_i = \beta_1 + \beta_2 x_{i2} + \dots + \beta_K x_{iK} + \varepsilon_i . \\
-  \text{Panel data:} \quad & y_{it} = x_{it}'\beta + \alpha_i + d_t + \varepsilon_{it} \\
-  \text{IV:} \quad & y_i = x_{1i}'\beta_1 + x_{2i}'\beta_2 + \varepsilon_i,
-     \quad \text{with instruments } z_i' = [z_{1i}' \;\; x_{2i}']
-\end{align*}
-Which variable $x_{ik}$ is the variable of interest? Which variables are controls? If you use panel methods, what exactly is in $\alpha_i$ and $d_t$ in your paper? For IV, which variables are in $x_{1i}$ and which in $z_{1i}$?
- 
-\paragraph{Step 2: Which comparison identifies $\beta$?}
-What do the authors compare to identify $\beta$. Is it a comparison across units, within the same unit over time, or between units that are affected differently by an instrument? Once $\alpha_i$ and $d_t$ are taken out, or once only the variation in $x_{1i}$ that comes from $z_{1i}$ is used, what variation is left?
- 
-\paragraph{Step 3: Which assumption allows a causal interpretation of $\hat{\beta}$?}
-Think about the material covered in class. Which of the main assumptions have to be fulfilled to allow for a causal interpretation. For OLS we made five assumptions: linearity, mean-zero error, homoskedasticity, no serial correlation, and normal errors. Both panel data methods and IV make some additional assumptions or replace some of the assumptions with their own version. For panel data methods, we have seen that the estimators differ in what they assume about $Cov(x_{is}, \varepsilon_{it})$ and $Cov(x_{it}, \alpha_i)$. What does the estimator in your paper need? For IV, we discussed exogeneity and relevance. What do they imply and how do the authors make sure that they are fulfilled? 
- 
-\paragraph{Step 4: Is the assumption plausible?}
-This should be the core of your evaluation of the paper. Some questions to guide you:
-\begin{itemize}[leftmargin=*, itemsep=2pt]
-  \item In general: We discussed three threats to the internal validity of OLS. Ask yourself: Could $y_i$ also affect the variable of interest? Is there a third variable that drives both? Is the variable of interest measured with error?
-  \item In panel data: Which of these problems can fixed effects account for and which not? Could the outcome in one  period affect the explanatory variables in a later period?
-  \item For IV: Why should the instrument move $x_{1i}$? Can you think of any channel through which it might affect $y_i$ directly, or be related to something in $\varepsilon_i$?
-\end{itemize}
- 
-\paragraph{Step 5: What evidence do the authors provide?}
-Which tests, robustness checks or figures do the authors use to support the assumption from Steps 3 and 4? For IV, what does the first stage show, and how large is the $F$-statistic? Does the evidence provided by the authors address the concerns you raised in Step~4, or does it test something else?
- 
-\paragraph{Step 6: How are standard errors computed?}
-Recall what happens when (A3) or (A4) fails. Which standard errors do the authors report? Do they cluster? If so, at which level? Are the errors potentially correlated within these clusters?
- 
-\subsection{Interpreting coefficients}
- 
-\begin{tabularx}{\textwidth}{@{}P{0.3\textwidth}L@{}}
-\toprule
-\textbf{Specification} & \textbf{Interpretation of $\beta_k$} \\
-\midrule
-$y_i$ on $x_{ik}$ & A one-unit increase in $x_{ik}$ changes $y_i$ by $\beta_k$ units. \\
-$\log y_i$ on $x_{ik}$ & A one-unit increase in $x_{ik}$ changes $y_i$ by about $100\beta_k$ percent (exactly $100(e^{\beta_k}-1)$ percent). \\
-$y_i$ on $\log x_{ik}$ & A one percent increase in $x_{ik}$ changes $y_i$ by about $\beta_k/100$ units. \\
-$\log y_i$ on $\log x_{ik}$ & A one percent increase in $x_{ik}$ changes $y_i$ by about $\beta_k$ percent (an elasticity). \\
-Binary $y_i$ (linear probability model) & A one-unit increase in $x_{ik}$ changes the probability that $y_i = 1$ by $100\beta_k$ percentage points. \\
-\bottomrule
-\end{tabularx}
- 
-In each case, the other explanatory variables are held constant.
-
-\subsection{Direction of omitted variable bias}
-
-As in class, suppose the true model is $y_i = x_i'\beta + \gamma w_i + \varepsilon_i$, but you estimate $y_i = x_i'\beta + \varepsilon_i$ and omit $w_i$. Then
-\[
-  E(\hat\beta_k) = \beta_k + \gamma \, \hat\beta_{w\_on\_x,k} ,
-\]
-where $\gamma$ is the effect of $w_i$ on $y_i$ and $\hat\beta_{w\_on\_x,k}$ is the coefficient on $x_{ik}$ in a regression of $w_i$ on $x_i$. In panel data, $\alpha_i$ plays the role of $w_i$ when it is ignored.
- 
-\begin{center}
-\begin{tabular}{@{}lcc@{}}
-\toprule
- & \textbf{$w_i$ raises $y_i$ ($\gamma > 0$)} & \textbf{$w_i$ lowers $y_i$ ($\gamma < 0$)} \\
-\midrule
-$w_i$ positively correlated with $x_{ik}$ & Upward bias & Downward bias \\
-$w_i$ negatively correlated with $x_{ik}$ & Downward bias & Upward bias \\
-\bottomrule
-\end{tabular}
-\end{center}
- 
-Upward bias makes the estimate more positive. For a negative $\beta_k$, it therefore pulls the estimate toward zero, so always say whether the bias moves the estimate toward or away from zero.
 
 \end{document}
