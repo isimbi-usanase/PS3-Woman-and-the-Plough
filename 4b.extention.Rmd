@@ -1,0 +1,174 @@
+---
+title: "4b.extention"
+output:
+  pdf_document: default
+  html_document: default
+date: "2026-11-28"
+---
+# Extension (e): Heterogeneity of the plough effect
+
+This file produces the single extension table of the report: models with continent fixed effects, communist history in columns (1)-(3), centred log income in columns (4)-(6), and the marginal plough effect in communist countries.
+
+## Setup
+
+```{r extension-setup, message=FALSE, warning=FALSE}
+library(haven)
+library(dplyr)
+library(fixest)
+library(knitr)
+library(kableExtra)
+
+dir.create("tables", showWarnings = FALSE)
+```
+
+## Load and prepare the data
+
+```{r extension-data}
+d <- read_dta("crosscountry_dataset.dta") |>
+  zap_labels() |>
+  mutate(
+    continent = factor(continent),
+    ln_income_c = ln_income - mean(ln_income, na.rm = TRUE)
+  )
+```
+
+## Control variables
+
+The extension builds on the Table IV specification, including
+historical and contemporary income controls.
+
+```{r extension-controls}
+setFixest_fml(
+  ..hist = ~ agricultural_suitability + tropical_climate +
+    large_animals + political_hierarchies + economic_complexity,
+  ..inc = ~ ln_income + ln_income_squared
+)
+```
+
+## Regressions (with continent fixed effects)
+
+```{r extension-models}
+# Plough x Communism
+m_comm_fe <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * communist_dummy + ..hist + ..inc | continent,
+  data = d,
+  vcov = "hetero"
+)
+
+# Plough x Income (centred log income and its square replace the income controls)
+m_inc_fe <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * ln_income_c + I(ln_income_c^2) + ..hist | continent,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+## Marginal plough effect in communist countries
+
+```{r extension-marginal}
+# beta1 + beta3 with its robust standard error.
+# p-values use the t distribution with the model's degrees of freedom,
+# exactly as fixest does for the regression coefficients.
+lincom <- function(m) {
+  b <- coef(m)
+  V <- vcov(m)
+  a <- "plow"
+  i <- "plow:communist_dummy"
+
+  est <- b[a] + b[i]
+  se  <- sqrt(V[a, a] + V[i, i] + 2 * V[a, i])
+  df  <- fixest::degrees_freedom(m, "t")
+
+  c(
+    estimate = unname(est),
+    se       = unname(se),
+    p_value  = unname(2 * pt(-abs(est / se), df))
+  )
+}
+```
+
+## Build the table
+
+```{r extension-table}
+add_stars <- function(p) {
+  ifelse(p < 0.01, "***", ifelse(p < 0.05, "**", ifelse(p < 0.10, "*", "")))
+}
+
+comm_fe <- as.list(m_comm_fe)
+inc_fe  <- as.list(m_inc_fe)
+all_fe  <- c(comm_fe, inc_fe)
+
+# Estimates, standard errors and p-values for one row of the table
+get_row <- function(v_comm, v_inc) {
+  pick <- function(m, v) coeftable(m)[v, c(1, 2, 4)]
+  rbind(t(sapply(comm_fe, pick, v = v_comm)),
+        t(sapply(inc_fe,  pick, v = v_inc)))
+}
+
+rows <- list(
+  "Plough use (beta1)"     = get_row("plow", "plow"),
+  "Z (beta2)"              = get_row("communist_dummy", "ln_income_c"),
+  "Plough x Z (beta3)"     = get_row("plow:communist_dummy", "plow:ln_income_c")
+)
+
+me  <- t(sapply(comm_fe, lincom))
+obs <- sapply(all_fe, nobs)
+r2v <- sapply(all_fe, function(m) r2(m, "r2"))
+```
+
+
+```{r extension-display, echo=FALSE}
+est_txt <- function(x, p) sprintf("%.3f%s", x, add_stars(p))
+se_txt  <- function(x) sprintf("(%.3f)", x)
+
+display <- do.call(rbind, lapply(names(rows), function(n) {
+  r <- rows[[n]]
+  rbind(c(n,  est_txt(r[, 1], r[, 3])),
+        c("", se_txt(r[, 2])))
+}))
+display <- rbind(
+  display,
+  c("Effect in communist countries (beta1+beta3)",
+    est_txt(me[, "estimate"], me[, "p_value"]), "", "", ""),
+  c("", se_txt(me[, "se"]), "", "", ""),
+  c("Observations", obs),
+  c("R-squared", sprintf("%.3f", r2v))
+)
+colnames(display) <- c("", "(1)", "(2)", "(3)", "(4)", "(5)", "(6)")
+
+kbl(display, booktabs = TRUE, linesep = "", align = c("l", rep("c", 6)),
+    caption = "Heterogeneity of the plough effect (with continent fixed effects)") |>
+  add_header_above(c(" " = 1, "FLFP" = 1, "Ownership" = 1, "Politics" = 1,
+                     "FLFP " = 1, "Ownership " = 1, "Politics " = 1)) |>
+  add_header_above(c(" " = 1, "Z = communist history" = 3,
+                     "Z = log income (centred)" = 3)) |>
+  kable_styling(latex_options = "scale_down", full_width = FALSE) |>
+  footnote(general = paste(
+    "OLS with historical controls, income controls and continent fixed effects.",
+    "Heteroskedasticity-robust standard errors in parentheses.",
+    "*** p < 0.01, ** p < 0.05, * p < 0.10."), general_title = "")
+```
+
+## Robustness check
+
+The report states that the results are very similar without continent
+fixed effects. This chunk prints the interaction coefficients without
+fixed effects so this statement can be checked.
+
+```{r extension-robustness-no-fe}
+m_comm <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * communist_dummy + ..hist + ..inc,
+  data = d, vcov = "hetero"
+)
+m_inc <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * ln_income_c + I(ln_income_c^2) + ..hist,
+  data = d, vcov = "hetero"
+)
+
+etable(m_comm, keep = "plow")
+etable(m_inc,  keep = "plow")
+```
