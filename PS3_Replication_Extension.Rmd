@@ -1,0 +1,980 @@
+---
+title: "Replication"
+output: html_document
+---
+
+# Table VIII - IV Replication
+
+
+## Load the data
+
+```{r load-data}
+library(haven)
+library(ivreg)
+library(sandwich)
+library(lmtest)
+
+country_data <- read_dta("crosscountry_dataset.dta")
+
+instruments <- c("plow_positive_crops", "plow_negative_crops")
+
+controls <- c(
+  "agricultural_suitability", "tropical_climate", "large_animals",
+  "political_hierarchies", "economic_complexity", "ln_income",
+  "ln_income_squared", "continent"
+)
+
+model_variables <- c("flfp2000", "plow", instruments, controls)
+iv_data <- country_data[, model_variables]
+iv_data <- iv_data[complete.cases(iv_data), ]
+iv_data$continent <- factor(iv_data$continent)
+
+nrow(iv_data)
+```
+
+## Panel A - First-stage results
+
+```{r first-stage}
+first_stage_formula <- reformulate(
+  c(instruments, controls),
+  response = "plow"
+)
+
+first_stage <- lm(first_stage_formula, data = iv_data)
+first_stage_vcov <- vcovHC(first_stage, type = "HC1")
+
+first_stage_results <- coeftest(first_stage, vcov. = first_stage_vcov)
+first_stage_results[instruments, , drop = FALSE]
+
+instrument_estimates <- coef(first_stage)[instruments]
+instrument_vcov <- first_stage_vcov[instruments, instruments]
+
+first_stage_f <- drop(
+  crossprod(instrument_estimates, solve(instrument_vcov, instrument_estimates))
+) / length(instruments)
+
+round(first_stage_f, 2)
+```
+
+### First-stage test of equality
+
+```{r first-stage-equality}
+contrast <- c(1, -1)
+coefficient_difference <- sum(contrast * instrument_estimates)
+difference_variance <- drop(crossprod(
+  contrast, instrument_vcov %*% contrast
+))
+
+equality_f <- coefficient_difference^2 / difference_variance
+equality_p <- pf(
+  equality_f, df1 = 1, df2 = df.residual(first_stage),
+  lower.tail = FALSE
+)
+
+c(F_statistic = equality_f, p_value = equality_p)
+```
+
+## Panel B - Reduced-form results
+
+```{r reduced-form}
+reduced_form_formula <- reformulate(
+  c(instruments, controls),
+  response = "flfp2000"
+)
+
+reduced_form <- lm(reduced_form_formula, data = iv_data)
+reduced_form_vcov <- vcovHC(reduced_form, type = "HC1")
+reduced_form_results <- coeftest(reduced_form, vcov. = reduced_form_vcov)
+
+reduced_form_results[instruments, , drop = FALSE]
+```
+
+
+## Panel C - IV results
+
+```{r iv-results}
+iv_formula <- as.formula(paste(
+  "flfp2000 ~", paste(c("plow", controls), collapse = " + "),
+  "|", paste(c(instruments, controls), collapse = " + ")
+))
+
+iv_model <- ivreg(iv_formula, data = iv_data)
+iv_vcov <- vcovHC(iv_model, type = "HC0")
+iv_results <- coeftest(iv_model, vcov. = iv_vcov)
+
+iv_results["plow", , drop = FALSE]
+nobs(iv_model)
+```
+
+### Robust Hausman endogeneity test
+
+```{r hausman-test}
+iv_data$first_stage_residual <- residuals(first_stage)
+
+hausman_formula <- reformulate(
+  c("plow", "first_stage_residual", controls),
+  response = "flfp2000"
+)
+
+hausman_model <- lm(hausman_formula, data = iv_data)
+hausman_vcov <- vcovHC(hausman_model, type = "HC1")
+hausman_results <- coeftest(hausman_model, vcov. = hausman_vcov)
+
+hausman_results["first_stage_residual", , drop = FALSE]
+```
+
+### Hansen J test
+
+```{r hansen-j-test}
+regressor_matrix <- model.matrix(
+  reformulate(c("plow", controls)), data = iv_data
+)
+instrument_matrix <- model.matrix(
+  reformulate(c(instruments, controls)), data = iv_data
+)
+
+outcome_values <- iv_data$flfp2000
+iv_residuals <- residuals(iv_model)
+
+moment_covariance <- crossprod(instrument_matrix * iv_residuals)
+instrument_regressor_products <- crossprod(instrument_matrix, regressor_matrix)
+instrument_outcome_products <- crossprod(instrument_matrix, outcome_values)
+
+weighted_regressor_products <- solve(
+  moment_covariance, instrument_regressor_products
+)
+weighted_outcome_products <- solve(
+  moment_covariance, instrument_outcome_products
+)
+
+gmm_coefficients <- solve(
+  crossprod(instrument_regressor_products, weighted_regressor_products),
+  crossprod(instrument_regressor_products, weighted_outcome_products)
+)
+
+gmm_residuals <- outcome_values - drop(regressor_matrix %*% gmm_coefficients)
+sample_moments <- crossprod(instrument_matrix, gmm_residuals)
+
+hansen_j <- drop(crossprod(
+  sample_moments, solve(moment_covariance, sample_moments)
+))
+hansen_df <- ncol(instrument_matrix) - ncol(regressor_matrix)
+hansen_p <- pchisq(hansen_j, df = hansen_df, lower.tail = FALSE)
+
+c(J_statistic = hansen_j, degrees_of_freedom = hansen_df, p_value = hansen_p)
+```
+
+## OLS on the same sample (for comparison)
+
+```{r ols-same-sample}
+ols_formula <- reformulate(
+  c("plow", controls),
+  response = "flfp2000"
+)
+
+ols_model <- lm(ols_formula, data = iv_data)
+ols_vcov <- vcovHC(ols_model, type = "HC1")
+ols_results <- coeftest(ols_model, vcov. = ols_vcov)
+
+ols_results["plow", , drop = FALSE]
+nobs(ols_model)
+```
+
+```{r iv-table-export}
+iv_rows <- rbind(
+  first_stage_results[instruments, , drop = FALSE],
+  reduced_form_results[instruments, , drop = FALSE],
+  iv_results["plow", , drop = FALSE],
+  ols_results["plow", , drop = FALSE]
+)
+
+iv_table <- data.frame(
+  Model = c("First stage", "", "Reduced form", "", "2SLS", "Same-sample OLS"),
+  Regressor = c(
+    "Plough-positive crop suitability", "Plough-negative crop suitability",
+    "Plough-positive crop suitability", "Plough-negative crop suitability",
+    "Traditional plough use", "Traditional plough use"
+  ),
+  Estimate = sprintf("%.3f", iv_rows[, 1]),
+  "Robust SE" = sprintf("%.3f", iv_rows[, 2]),
+  "p-value" = format.pval(iv_rows[, 4], digits = 3, eps = 0.001),
+  check.names = FALSE
+)
+
+dir.create("tables", showWarnings = FALSE)
+
+writeLines(
+  as.character(knitr::kable(
+    iv_table, format = "latex", booktabs = TRUE,
+    row.names = FALSE, align = c("l", "l", "r", "r", "r")
+  )),
+  "tables/table_iv_replication.tex"
+)
+```
+
+
+# Tables III and IV - OLS Replication
+
+## Setup
+
+```{r ols-setup, message = FALSE}
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+
+# Output folders: knitting creates "tables" and "figures" in the same folder as
+# this .Rmd file and saves the table (.tex) and figures (.png, .pdf) there.
+# They are recreated (overwritten) every time the file is knitted.
+# Note: crosscountry_dataset.dta must be in the same folder as this .Rmd file.
+dir.create("tables", showWarnings = FALSE)
+dir.create("figures", showWarnings = FALSE)
+
+historical_controls <- c(
+  "agricultural_suitability", "tropical_climate", "large_animals",
+  "political_hierarchies", "economic_complexity"
+)
+
+contemporary_controls <- c("ln_income", "ln_income_squared")
+```
+
+## OLS estimation
+
+```{r ols-function}
+fit_ols <- function(controls_used, continent_fe) {
+  regressors <- c("plow", controls_used)
+  if (continent_fe) regressors <- c(regressors, "continent")
+
+  sample_variables <- c("flfp2000", "plow", controls_used)
+  ols_data <- country_data[, c(sample_variables, "continent", "isocode")]
+  ols_data <- ols_data[complete.cases(ols_data[, sample_variables]), ]
+  ols_data$continent <- factor(ols_data$continent)
+
+  ols_fit <- lm(reformulate(regressors, response = "flfp2000"), data = ols_data)
+  ols_fit_vcov <- vcovHC(ols_fit, type = "HC1")
+
+  list(
+    model    = ols_fit,
+    vcov     = ols_fit_vcov,
+    results  = coeftest(ols_fit, vcov. = ols_fit_vcov),
+    data     = ols_data,
+    controls = controls_used,
+    fe       = continent_fe
+  )
+}
+```
+
+```{r ols-estimation}
+ols_models <- list(
+  "III (1)" = fit_ols(historical_controls, continent_fe = FALSE),
+  "III (2)" = fit_ols(historical_controls, continent_fe = TRUE),
+  "IV (1)"  = fit_ols(c(historical_controls, contemporary_controls), continent_fe = FALSE),
+  "IV (2)"  = fit_ols(c(historical_controls, contemporary_controls), continent_fe = TRUE)
+)
+
+ols_models[["IV (2)"]]$results["plow", , drop = FALSE]
+nobs(ols_models[["IV (2)"]]$model)
+```
+
+## Table: Replication
+
+```{r ols-table-function}
+coefficient_labels <- c(
+  plow                     = "Traditional plough use",
+  agricultural_suitability = "Agricultural suitability",
+  tropical_climate         = "Tropical climate",
+  large_animals            = "Presence of large animals",
+  political_hierarchies    = "Political hierarchies",
+  economic_complexity      = "Economic complexity",
+  ln_income                = "ln income in 2000",
+  ln_income_squared        = "ln income in 2000 squared"
+)
+
+add_stars <- function(p_value) {
+  ifelse(p_value < 0.01, "***", ifelse(p_value < 0.05, "**", ifelse(p_value < 0.1, "*", "")))
+}
+
+format_column <- function(fit) {
+  results <- fit$results
+  cells <- character(0)
+  for (variable in names(coefficient_labels)) {
+    if (variable %in% rownames(results)) {
+      estimate <- sprintf("%.3f%s", results[variable, 1], add_stars(results[variable, 4]))
+      std_error <- sprintf("(%.3f)", results[variable, 2])
+    } else {
+      estimate <- ""
+      std_error <- ""
+    }
+    cells <- c(cells, estimate, std_error)
+  }
+  model_summary <- summary(fit$model)
+  c(
+    cells,
+    ifelse(fit$fe, "yes", "no"),
+    as.character(nobs(fit$model)),
+    sprintf("%.2f", model_summary$adj.r.squared),
+    sprintf("%.2f", model_summary$r.squared),
+    sprintf("%.2f", mean(fit$data$flfp2000))
+  )
+}
+
+row_labels <- c(
+  as.vector(rbind(coefficient_labels, "")),
+  "Continent fixed effects", "Observations", "Adjusted R-squared",
+  "R-squared", "Mean of dep. var."
+)
+
+ols_table <- data.frame(
+  Variable = row_labels,
+  sapply(ols_models, format_column),
+  check.names = FALSE
+)
+colnames(ols_table) <- c("", "(1)", "(2)", "(3)", "(4)")
+```
+
+```{r ols-table-html}
+kbl(
+  ols_table, align = c("l", rep("c", 4)), row.names = FALSE,
+  caption = "Country-level OLS estimates of female labour force participation in 2000 (replication of Tables III and IV)"
+) |>
+  kable_classic(full_width = FALSE, html_font = "Times New Roman") |>
+  add_header_above(c(" " = 1, "Dependent variable: female labour force participation in 2000" = 4), italic = TRUE) |>
+  add_header_above(c(" " = 1, "Table III" = 2, "Table IV" = 2)) |>
+  pack_rows("Historical controls:", 3, 12, italic = TRUE, bold = FALSE) |>
+  pack_rows("Contemporary controls:", 13, 16, italic = TRUE, bold = FALSE) |>
+  row_spec(16, extra_css = "border-bottom: 1px solid;") |>
+  footnote(general = "*** p < 0.01, ** p < 0.05, * p < 0.1.", general_title = "")
+```
+
+```{r ols-table-latex}
+ols_table_latex <- kbl(
+  ols_table, format = "latex", booktabs = TRUE, linesep = "",
+  align = c("l", rep("c", 4)), row.names = FALSE
+) |>
+  add_header_above(c(" " = 1, "Dependent variable: female labour force participation in 2000" = 4), italic = TRUE) |>
+  add_header_above(c(" " = 1, "Table III" = 2, "Table IV" = 2)) |>
+  pack_rows("Historical controls:", 3, 12, italic = TRUE, bold = FALSE,
+            latex_gap_space = "0.3em") |>
+  pack_rows("Contemporary controls:", 13, 16, italic = TRUE, bold = FALSE,
+            latex_gap_space = "0.3em") |>
+  row_spec(16, hline_after = TRUE) |>
+  footnote(general = "*** p < 0.01, ** p < 0.05, * p < 0.1.", general_title = "", escape = FALSE)
+
+writeLines(ols_table_latex, "tables/table_ols_replication.tex")
+```
+
+## Comparison with the published results
+
+```{r paper-comparison}
+data.frame(
+  paper       = c(-14.895, -15.962, -12.401, -12.930),
+  replication = round(sapply(ols_models, function(fit) fit$results["plow", 1]), 3),
+  n           = sapply(ols_models, function(fit) nobs(fit$model))
+)
+```
+
+## Figure IVa - partial regression plots (Frisch-Waugh-Lovell)
+
+```{r partial-regression-function}
+partial_regression <- function(fit) {
+  partial_controls <- fit$controls
+  if (fit$fe) partial_controls <- c(partial_controls, "continent")
+
+  partial_data <- fit$data
+  partial_data$flfp_residual <- residuals(
+    lm(reformulate(partial_controls, response = "flfp2000"), data = partial_data)
+  )
+  partial_data$plow_residual <- residuals(
+    lm(reformulate(partial_controls, response = "plow"), data = partial_data)
+  )
+
+  residual_slope <- coef(lm(flfp_residual ~ plow_residual, data = partial_data))["plow_residual"]
+  stopifnot(isTRUE(all.equal(unname(residual_slope), unname(coef(fit$model)["plow"]))))
+
+  list(
+    data   = partial_data,
+    coef   = unname(coef(fit$model)["plow"]),
+    t_stat = unname(fit$results["plow", 3])
+  )
+}
+
+partial_plot <- function(partial, title) {
+  ggplot(partial$data, aes(x = plow_residual, y = flfp_residual)) +
+    geom_hline(yintercept = 0, colour = "grey85", linewidth = 0.3) +
+    geom_vline(xintercept = 0, colour = "grey85", linewidth = 0.3) +
+    geom_point(size = 0.8, colour = "black") +
+    geom_text(aes(label = isocode), size = 1.9, colour = "grey45", vjust = -0.9) +
+    geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+                colour = "black", linewidth = 0.8) +
+    labs(
+      title    = title,
+      subtitle = sprintf("Slope = %.2f (robust t = %.2f), N = %d",
+                         partial$coef, partial$t_stat, nrow(partial$data)),
+      x        = "Traditional plough use (residual)",
+      y        = "Female labour force participation 2000 (residual)"
+    ) +
+    theme_minimal(base_size = 10) +
+    theme(
+      panel.grid.minor = element_blank(),
+      plot.title       = element_text(size = 10, face = "bold"),
+      plot.subtitle    = element_text(size = 9, colour = "grey30"),
+      axis.title       = element_text(size = 9)
+    )
+}
+```
+
+```{r figure-iva-replication, fig.width = 6.5, fig.height = 4.5}
+partial_iv_1 <- partial_regression(ols_models[["IV (1)"]])
+
+figure_iva <- partial_plot(
+  partial_iv_1,
+  "(a) Replication of Figure IVa: without continent fixed effects"
+)
+figure_iva
+
+ggsave("figures/figure_iva_replication.pdf", figure_iva, width = 6.5, height = 4.5)
+ggsave("figures/figure_iva_replication.png", figure_iva, width = 6.5, height = 4.5, dpi = 300)
+```
+
+```{r figure-iva-continent-fe, fig.width = 6.5, fig.height = 4.5}
+partial_iv_2 <- partial_regression(ols_models[["IV (2)"]])
+
+figure_iva_fe <- partial_plot(
+  partial_iv_2,
+  "(b) Main specification: with continent fixed effects"
+)
+figure_iva_fe
+
+ggsave("figures/figure_iva_continent_fe.pdf", figure_iva_fe, width = 6.5, height = 4.5)
+ggsave("figures/figure_iva_continent_fe.png", figure_iva_fe, width = 6.5, height = 4.5, dpi = 300)
+```
+
+## Omitted variable bias: dropping income on the same 165 countries
+
+```{r ovb-income}
+ovb_data <- ols_models[["IV (2)"]]$data
+ovb_controls <- c(historical_controls, "continent")
+
+long_model  <- lm(reformulate(c("plow", contemporary_controls, ovb_controls), response = "flfp2000"), data = ovb_data)
+short_model <- lm(reformulate(c("plow", ovb_controls), response = "flfp2000"), data = ovb_data)
+
+delta <- coef(long_model)[contemporary_controls]
+income_on_plough <- sapply(contemporary_controls, function(v)
+  coef(lm(reformulate(c("plow", ovb_controls), response = v), data = ovb_data))["plow"])
+
+income_on_plough
+
+c(coef_without_income = unname(coef(short_model)["plow"]),
+  coef_with_income    = unname(coef(long_model)["plow"]),
+  bias_term           = sum(delta * income_on_plough))
+
+turning_point <- -delta["ln_income"] / (2 * delta["ln_income_squared"])
+c(turning_point_usd = unname(exp(turning_point)),
+  share_below       = mean(ovb_data$ln_income < turning_point))
+```
+
+## Significance: 95% confidence interval (robust)
+
+```{r significance}
+coefci(ols_models[["IV (2)"]]$model, vcov. = ols_models[["IV (2)"]]$vcov)["plow", ]
+```
+
+# Extension (e): Heterogeneity of the plough effect
+
+## Setup
+
+```{r extension-setup, message=FALSE, warning=FALSE}
+library(haven)
+library(dplyr)
+library(fixest)
+library(knitr)
+library(kableExtra)
+
+dir.create("tables", showWarnings = FALSE)
+```
+
+## Load and prepare the data
+
+```{r extension-data}
+d <- read_dta("crosscountry_dataset.dta") |>
+  zap_labels() |>
+  mutate(
+    continent = factor(continent),
+    ln_income_c = ln_income - mean(ln_income, na.rm = TRUE)
+  )
+```
+
+## Control variables
+
+The extension builds on the Table IV specification, including
+historical and contemporary income controls.
+
+```{r extension-controls}
+setFixest_fml(
+  ..hist = ~ agricultural_suitability + tropical_climate +
+    large_animals + political_hierarchies + economic_complexity,
+  ..inc = ~ ln_income + ln_income_squared
+)
+```
+
+## Plough x Communism
+
+### Without continent fixed effects
+
+```{r communism-no-fe}
+m_comm <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * communist_dummy + ..hist + ..inc,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+### With continent fixed effects
+
+```{r communism-fe}
+m_comm_fe <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * communist_dummy + ..hist + ..inc | continent,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+### Marginal plough effect in communist countries
+
+```{r communism-marginal-effects}
+lincom <- function(m) {
+
+  b <- coef(m)
+  V <- vcov(m)
+
+  a <- "plow"
+  i <- "plow:communist_dummy"
+
+  est <- b[a] + b[i]
+
+  se <- sqrt(
+    V[a, a] + V[i, i] + 2 * V[a, i]
+  )
+
+  c(
+    estimate = unname(est),
+    se = unname(se),
+    p_value = unname(2 * pnorm(-abs(est / se))),
+    CI_lower = unname(est - 1.96 * se),
+    CI_upper = unname(est + 1.96 * se)
+  )
+}
+
+marginal_no_fe <- as.data.frame(
+  t(sapply(as.list(m_comm), lincom))
+)
+
+marginal_fe <- as.data.frame(
+  t(sapply(as.list(m_comm_fe), lincom))
+)
+
+outcomes <- c(
+  "FLFP 2000",
+  "Female firm ownership",
+  "Women in parliament"
+)
+
+marginal_no_fe$Outcome <- outcomes
+marginal_no_fe$Specification <- "Without FE"
+
+marginal_fe$Outcome <- outcomes
+marginal_fe$Specification <- "With FE"
+
+marginal_table <- bind_rows(
+  marginal_no_fe,
+  marginal_fe
+) |>
+  select(
+    Outcome,
+    Specification,
+    estimate,
+    se,
+    p_value,
+    CI_lower,
+    CI_upper
+  )
+
+colnames(marginal_table) <- c(
+  "Outcome",
+  "Specification",
+  "Estimate",
+  "Robust SE",
+  "P-value",
+  "CI lower",
+  "CI upper"
+)
+```
+
+## Plough x Income
+
+### Without continent fixed effects
+
+```{r income-no-fe}
+m_inc <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * ln_income_c + I(ln_income_c^2) + ..hist,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+### With continent fixed effects
+
+```{r income-fe}
+m_inc_fe <- feols(
+  c(flfp2000, female_ownership, women_politics) ~
+    plow * ln_income_c + I(ln_income_c^2) + ..hist |
+    continent,
+  data = d,
+  vcov = "hetero"
+)
+```
+
+## Regression table functions
+
+```{r extension-table-functions}
+# Statistical significance stars
+
+add_stars <- function(p) {
+  ifelse(
+    p < 0.01, "***",
+    ifelse(
+      p < 0.05, "**",
+      ifelse(p < 0.10, "*", "")
+    )
+  )
+}
+
+# Extract coefficients and regression statistics
+
+format_extension <- function(model, variables, fe) {
+
+  results <- coeftable(model)
+
+  cells <- unlist(lapply(variables, function(v) {
+
+    if (v %in% rownames(results)) {
+
+      c(
+        sprintf(
+          "%.3f%s",
+          results[v, 1],
+          add_stars(results[v, 4])
+        ),
+        sprintf(
+          "(%.3f)",
+          results[v, 2]
+        )
+      )
+
+    } else {
+
+      c("", "")
+
+    }
+  }))
+
+  c(
+    cells,
+    "Yes",
+    "Yes",
+    ifelse(fe, "Yes", "No"),
+    as.character(nobs(model)),
+    sprintf("%.3f", r2(model, "ar2")),
+    sprintf("%.3f", r2(model, "r2"))
+  )
+}
+
+# Construct regression table
+
+build_extension_table <- function(models, labels) {
+
+  table_data <- data.frame(
+
+    Variable = c(
+      as.vector(rbind(unname(labels), "")),
+      "Historical controls",
+      "Income controls",
+      "Continent fixed effects",
+      "Observations",
+      "Adjusted R-squared",
+      "R-squared"
+    ),
+
+    sapply(seq_along(models), function(i) {
+
+      format_extension(
+        model = models[[i]],
+        variables = names(labels),
+        fe = i > 3
+      )
+
+    }),
+
+    check.names = FALSE
+  )
+
+  colnames(table_data) <- c(
+    "",
+    "(1)", "(2)", "(3)",
+    "(4)", "(5)", "(6)"
+  )
+
+  table_data
+}
+
+# Common table formatting for HTML and PDF
+
+
+display_extension_table <- function(
+    table_data,
+    table_title,
+    format = NULL,
+    label = NULL
+) {
+
+  tab <- kbl(
+    table_data,
+    format = format,
+    booktabs = TRUE,
+    linesep = "",
+    align = c("l", rep("c", 6)),
+    row.names = FALSE,
+    caption = table_title,
+    label = label
+  ) |>
+    add_header_above(c(
+      " " = 1,
+      "FLFP" = 1,
+      "Ownership" = 1,
+      "Politics" = 1,
+      "FLFP " = 1,
+      "Ownership " = 1,
+      "Politics " = 1
+    )) |>
+    add_header_above(c(
+      " " = 1,
+      "Without continent FE" = 3,
+      "With continent FE" = 3
+    ))
+
+  is_latex <- if (is.null(format)) {
+    knitr::is_latex_output()
+  } else {
+    format == "latex"
+  }
+
+  if (is_latex) {
+
+    tab <- tab |>
+      kable_styling(
+        latex_options = "scale_down",
+        full_width = FALSE,
+        font_size = 9
+      ) |>
+      footnote(
+        general = paste(
+          "Heteroskedasticity-robust standard errors",
+          "in parentheses.",
+          "*** p $<$ 0.01, ** p $<$ 0.05,",
+          "* p $<$ 0.10."
+        ),
+        general_title = "",
+        escape = FALSE
+      )
+
+  } else {
+
+    tab <- tab |>
+      kable_classic(
+        full_width = FALSE,
+        html_font = "Times New Roman"
+      ) |>
+      footnote(
+        general = paste(
+          "Heteroskedasticity-robust standard errors",
+          "in parentheses.",
+          "*** p < 0.01, ** p < 0.05,",
+          "* p < 0.10."
+        ),
+        general_title = ""
+      )
+
+  }
+
+  tab
+}
+```
+
+## Table A - Heterogeneity by communist history
+
+```{r table-communism-data}
+comm_labels <- c(
+  plow = "Traditional plough use",
+  communist_dummy = "Communist history",
+  "plow:communist_dummy" = "Plough x Communist"
+)
+
+comm_models <- c(
+  as.list(m_comm),
+  as.list(m_comm_fe)
+)
+
+comm_table <- build_extension_table(
+  models = comm_models,
+  labels = comm_labels
+)
+```
+
+```{r table-communism-display, echo=FALSE, results='asis'}
+display_extension_table(
+  table_data = comm_table,
+  table_title = "Heterogeneity by communist history"
+)
+```
+
+## Table B - Heterogeneity by economic development
+
+```{r table-income-data}
+inc_labels <- c(
+  plow = "Traditional plough use",
+  ln_income_c = "Log income (centred)",
+  "plow:ln_income_c" = "Plough x Log income"
+)
+
+inc_models <- c(
+  as.list(m_inc),
+  as.list(m_inc_fe)
+)
+
+inc_table <- build_extension_table(
+  models = inc_models,
+  labels = inc_labels
+)
+```
+
+```{r table-income-display, echo=FALSE, results='asis'}
+display_extension_table(
+  table_data = inc_table,
+  table_title = "Heterogeneity by economic development"
+)
+```
+
+## Table C - Marginal plough effects in communist countries
+
+```{r table-marginal-display, echo=FALSE, results='asis'}
+marginal_display <- kbl(
+  marginal_table,
+  digits = 3,
+  booktabs = TRUE,
+  row.names = FALSE,
+  caption = "Marginal plough effects in communist countries"
+)
+
+if (knitr::is_latex_output()) {
+
+  marginal_display |>
+    kable_styling(
+      latex_options = "scale_down",
+      full_width = FALSE,
+      font_size = 9
+    ) |>
+    footnote(
+      general = paste(
+        "Marginal effects are calculated as the sum",
+        "of the plough and interaction coefficients.",
+        "Confidence intervals use the normal approximation."
+      ),
+      general_title = ""
+    )
+
+} else {
+
+  marginal_display |>
+    kable_classic(
+      full_width = FALSE,
+      html_font = "Times New Roman"
+    ) |>
+    footnote(
+      general = paste(
+        "Marginal effects are calculated as the sum",
+        "of the plough and interaction coefficients.",
+        "Confidence intervals use the normal approximation."
+      ),
+      general_title = ""
+    )
+
+}
+```
+
+## Export regression tables
+
+```{r extension-export, message=FALSE, warning=FALSE}
+# Export Table A
+
+latex_comm <- display_extension_table(
+  table_data = comm_table,
+  table_title = "Heterogeneity by communist history",
+  format = "latex",
+  label = "ext_comm"   # -> \label{tab:ext_comm}, used in report.tex
+)
+
+writeLines(
+  as.character(latex_comm),
+  "tables/table_extension_communism.tex"
+)
+
+# Export Table B
+
+latex_inc <- display_extension_table(
+  table_data = inc_table,
+  table_title = "Heterogeneity by economic development",
+  format = "latex",
+  label = "ext_income" # -> \label{tab:ext_income}, used in report.tex
+)
+
+writeLines(
+  as.character(latex_inc),
+  "tables/table_extension_income.tex"
+)
+
+# Export Table C
+
+latex_marginal <- kbl(
+  marginal_table,
+  format = "latex",
+  digits = 3,
+  booktabs = TRUE,
+  row.names = FALSE,
+  caption = "Marginal plough effects in communist countries",
+  label = "ext_marginal" # -> \label{tab:ext_marginal}
+) |>
+  kable_styling(
+    latex_options = "scale_down",
+    full_width = FALSE,
+    font_size = 9
+  ) |>
+  footnote(
+    general = paste(
+      "Marginal effects are calculated as the sum",
+      "of the plough and interaction coefficients.",
+      "Confidence intervals use the normal approximation."
+    ),
+    general_title = ""
+  )
+
+writeLines(
+  as.character(latex_marginal),
+  "tables/table_extension_marginal_effects.tex"
+)
+
+# Verify that the tables have been exported
+
+list.files("tables")
+```
